@@ -1,0 +1,9 @@
+streamlit
+requests
+python-dotenv
+langchain
+langchain-google-genai
+langgraph
+langgraph-checkpoint-sqlite
+chromadb
+rich
