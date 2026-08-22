@@ -58,6 +58,7 @@ def save_movies_to_json(movies: list[dict], path: str = "data/movies.json"):
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(movies, f, ensure_ascii=False, indent=2)
 
+
 if __name__ == "__main__":
     # 터미널에서 python -m tools.movie_data 로 실행
     movies = fetch_popular_movies(pages=5)
