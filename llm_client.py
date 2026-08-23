@@ -1,46 +1,81 @@
 """
-영화 추천 RAG 에이전트.
-
-what-to-eat-project의 llm_client.py와 전체 구조는 동일함 (create_agent + SqliteSaver + ask/ask_stream).
-바뀌는 건 도구(tool)와 system_prompt뿐 — 이미 배운 패턴이니 이전 코드를 최대한 재사용해서 채워봐.
+영화 추천 RAG 에이전트 - raw LangGraph StateGraph
 """
+from typing import TypedDict
+from langchain.chat_models import init_chat_model
+from langchain_core.messages import HumanMessage
+from langgraph.graph import StateGraph, START, END
+from langgraph.checkpoint.sqlite import SqliteSaver
+import sqlite3
+from tools.vector_store import search_movies
+from rich import print as rprint
 
-# TODO: import
-#   what-to-eat-project/llm_client.py의 import를 그대로 가져오되,
-#   from tools.weather_tool import get_weather
-#   from tools.restaurant_tool import get_restaurant
-#   위 두 줄을 지우고 대신:
-#   from tools.vector_store import search_movies
+class MovieState(TypedDict):
+    query: str              # 사용자 질문
+    search_results: dict    # search_movies() 검색 결과
+    answer: str             # 최종 답변
+
+
+def retrieve_node(state):
+    """
+    검색 노드: state["query"]로 벡터DB를 검색해서 state["search_results"]를 채워 반환.
+    """
+    result = search_movies(state['query'])
+
+    return {'search_results': result}
+
+
+def generate_node(state):
+    """
+    답변 생성 노드: state["search_results"]를 참고해서 LLM에게 추천 답변을 만들게 하고
+    state["answer"]를 채워 반환.
+    """
+    llm = init_chat_model('gemini-3.1-flash-lite', model_provider='google_genai')
+    prompt = f'''
+          사용자 질문: {state["query"]}
+          검색된 영화 목록: {state["search_results"]}
+    
+          위 영화들 중에서 사용자 취향에 가장 맞는 영화를 골라 이유와 함께 추천해줘.
+          검색 결과에 마음에 드는 영화가 없다면 다른 취향을 물어봐줘.
+          '''
+    
+    result = llm.invoke([HumanMessage(content=prompt)])
+    answer = result.content[0]['text']
+    
+    return {'answer': answer}
 
 
 def build_agent():
     """
-    TODO: what-to-eat-project의 build_agent()를 거의 그대로 복사해서 쓰되:
-      - SqliteSaver 체크포인터 부분은 완전히 동일 (이미 배운 패턴 그대로 재사용)
-      - tools=[search_movies] 로 변경 (도구 1개짜리 에이전트)
-      - system_prompt만 새로 작성
-        (예: "너는 사용자의 취향, 원하는 분위기나 장르를 듣고 영화를 추천하는 챗봇이야.
-              반드시 search_movies 도구로 검색한 영화들 중에서만 추천하고,
-              왜 그 영화가 사용자 취향에 맞는지 이유를 함께 설명해줘.
-              검색 결과에 마음에 드는 영화가 없다면 다른 취향을 물어봐줘.")
+    retrieve_node -> generate_node 순서로 연결된 그래프를 만들고 컴파일해서 반환.
     """
-    pass
+    conn = sqlite3.connect('checkpoint.db', check_same_thread=False)
+    memory = SqliteSaver(conn)
+
+    graph = StateGraph(MovieState)
+
+    graph.add_node('retrieve', retrieve_node)
+    graph.add_node('generate', generate_node)
+
+    graph.add_edge(START, 'retrieve')
+    graph.add_edge('retrieve', 'generate')
+    graph.add_edge('generate', END)
+
+    app = graph.compile(checkpointer=memory)
+
+    return app
 
 
 def ask(agent, user_message: str, thread_id: str) -> str:
     """
-    TODO: what-to-eat-project의 ask()와 완전히 동일한 코드.
-    (도메인이 영화로 바뀌어도 이 함수 내용 자체는 하나도 바뀔 게 없음 — 그대로 복사)
+    사용자 질문을 받아 에이전트(그래프)를 실행하고 최종 답변만 반환하는 진입점 함수.
+    app.py 등 외부에서는 State 구조를 몰라도 이 함수 하나만 호출하면 됨.
+    thread_id로 SqliteSaver가 대화별 기록을 구분해서 저장/이어감.
     """
-    pass
+    config = {'configurable': {'thread_id': thread_id}}
+    result = agent.invoke({'query': user_message}, config)
 
-
-def ask_stream(agent, user_message: str, thread_id: str):
-    """
-    TODO: what-to-eat-project의 ask_stream()과 완전히 동일한 코드.
-    (마찬가지로 그대로 복사해서 재사용하면 됨)
-    """
-    pass
+    return result['answer']
 
 
 if __name__ == "__main__":
