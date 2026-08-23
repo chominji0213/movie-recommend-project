@@ -30,18 +30,29 @@ def generate_node(state):
     답변 생성 노드: state["search_results"]를 참고해서 LLM에게 추천 답변을 만들게 하고
     state["answer"]를 채워 반환.
     """
+    search_results = state["search_results"]
+
+    if isinstance(search_results, dict) and "error" in search_results:
+        return {"answer": "죄송해요, 취향에 맞는 영화를 찾지 못했어요. 다른 분위기나 키워드로 다시 말씀해 주시겠어요?"}
+
     llm = init_chat_model('gemini-3.1-flash-lite', model_provider='google_genai')
     prompt = f'''
           사용자 질문: {state["query"]}
-          검색된 영화 목록: {state["search_results"]}
-    
+          검색된 영화 목록: {search_results}
+
           위 영화들 중에서 사용자 취향에 가장 맞는 영화를 골라 이유와 함께 추천해줘.
           검색 결과에 마음에 드는 영화가 없다면 다른 취향을 물어봐줘.
           '''
-    
-    result = llm.invoke([HumanMessage(content=prompt)])
-    answer = result.content[0]['text']
-    
+
+    try:
+        result = llm.invoke([HumanMessage(content=prompt)])
+        content = result.content
+
+        answer = content[0]['text'] if isinstance(content, list) else content
+    except Exception as e:
+        rprint(f"[generate_node] LLM 호출 실패: {e}")
+        answer = "죄송해요, 지금 답변을 생성하는 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요."
+
     return {'answer': answer}
 
 
