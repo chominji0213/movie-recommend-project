@@ -4,9 +4,6 @@
 
 지금까지의 프로젝트(날씨 챗봇, 오늘 뭐 먹지 추천봇)가 외부 API를 즉시 호출하는 Tool Calling 구조였다면, 이 프로젝트는 처음으로 **RAG(Retrieval-Augmented Generation)** — 벡터DB에 미리 구축한 데이터를 검색해서 LLM에게 근거로 제공하는 방식 — 을 연습한 프로젝트입니다. 에이전트 오케스트레이션도 `create_agent`(LLM이 자동으로 도구 호출을 판단하는 방식) 대신, LangGraph의 `StateGraph`로 "검색 → 답변 생성" 흐름을 직접 설계했습니다.
 
-**배포 링크**: https://movie-recommend-project-58a3.onrender.com
-(Render 무료 플랜 특성상 15분 미접속 시 슬립 상태가 되며, 첫 접속 시 콜드 스타트로 몇십 초 정도 걸릴 수 있습니다.)
-
 ## 기술 스택
 
 - **LLM**: Gemini API (`gemini-3.1-flash-lite`, via LangChain `init_chat_model`)
