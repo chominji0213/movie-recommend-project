@@ -89,7 +89,3 @@ def ask(agent, user_message: str, thread_id: str) -> str:
 
     return result['answer']
 
-
-if __name__ == "__main__":
-    agent = build_agent()
-    print(ask(agent, "우주를 배경으로 한 감동적인 영화 추천해줘", "test-thread"))
