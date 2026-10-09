@@ -77,9 +77,5 @@ def search_movies(query: str, k: int = 5) -> dict:
 
 if __name__ == "__main__":
     # 터미널에서 python -m tools.vector_store 로 최초 1회 실행해서 벡터DB 구축
-    # build_vector_store()
-    # print("벡터DB 구축 완료")
-
-    # 구축 후 바로 검색 테스트 해보고 싶으면 아래 주석 풀기
-    # from rich import print as rprint
-    rprint(search_movies("평점이 높은 영화 10개정도 알려줘"))
+  build_vector_store()
+    print("벡터DB 구축 완료")
