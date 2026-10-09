@@ -8,7 +8,6 @@ import os
 import json
 import requests
 from dotenv import load_dotenv
-from rich import print as rprint
 load_dotenv()
 
 BASE_URL = "https://api.themoviedb.org/3"
