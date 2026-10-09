@@ -2,7 +2,7 @@
 
 사용자가 원하는 분위기나 취향을 말하면, 벡터DB에서 의미적으로 가장 비슷한 영화를 검색해 LLM이 추천 이유와 함께 답변해주는 챗봇입니다.
 
-지금까지의 프로젝트(날씨 챗봇, 오늘 뭐 먹지 추천봇)가 외부 API를 즉시 호출하는 Tool Calling 구조였다면, 이 프로젝트는 처음으로 **RAG(Retrieval-Augmented Generation)** — 벡터DB에 미리 구축한 데이터를 검색해서 LLM에게 근거로 제공하는 방식 — 을 연습한 프로젝트입니다. 에이전트 오케스트레이션도 `create_agent`(LLM이 자동으로 도구 호출을 판단하는 방식) 대신, LangGraph의 `StateGraph`로 "검색 → 답변 생성" 흐름을 직접 설계했습니다.
+지금까지의 프로젝트(날씨 챗봇, 오늘 뭐 먹지 추천봇)가 외부 API를 즉시 호출하는 Tool Calling 구조였다면, 이 프로젝트는 처음으로 **RAG(Retrieval-Augmented Generation)** — 벡터DB에 미리 구축한 데이터를 검색해서 LLM에게 근거로 제공하는 방식 — 을 연습한 프로젝트입니다. 에이전트 오케스트레이션도 `create_agent`(LLM이 자동으로 도구 호출을 판단하는 방식) 대신, LangGraph의 `StateGraph`로 "검색 → 답변 생성" 흐름을 설계했습니다.
 
 ## 기술 스택
 
