@@ -13,7 +13,7 @@
 - **대화 저장**: LangGraph `SqliteSaver` 체크포인터
 - **데이터 소스**: TMDB(The Movie Database) Open API
 - **UI**: Streamlit
-- **배포**: Docker + Render
+- **배포**: Docker + Render(현재는 내려가있음)
 
 ## 주요 기능
 
