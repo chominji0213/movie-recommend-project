@@ -77,5 +77,5 @@ def search_movies(query: str, k: int = 5) -> dict:
 
 if __name__ == "__main__":
     # 터미널에서 python -m tools.vector_store 로 최초 1회 실행해서 벡터DB 구축
-  build_vector_store()
+    build_vector_store()
     print("벡터DB 구축 완료")
